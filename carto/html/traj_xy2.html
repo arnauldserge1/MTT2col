@@ -1,0 +1,361 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>traj_xy2</title><meta name="generator" content="MATLAB 8.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-02-20"><meta name="DC.source" content="traj_xy2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">boucle / file</a></li><li><a href="#4">prep data</a></li><li><a href="#5">* codage couleur: max val *</a></li><li><a href="#6">* met l'image de la cellule "au plancher" *</a></li><li><a href="#7">--- go through traces ---</a></li><li><a href="#9">* intensit&eacute;s traji *</a></li><li><a href="#11">coordonn&eacute;es t,x,y du pas en cours</a></li><li><a href="#12">* codage couleur *</a></li><li><a href="#13">plot du segment istep </a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> traj_xy2(filename, codage, dirname, min_length_ratio)
+</pre><pre class="codeinput"><span class="comment">% function traj_xy2(filename, codage, dirname, min_length_ratio)</span>
+<span class="comment">%</span>
+<span class="comment">% plot all traces on first or trans. image</span>
+<span class="comment">%</span>
+<span class="comment">% if codage=='dens' % codage density, n/R2, cf. Douglass</span>
+<span class="comment">% elseif codage=='speed' % codage movement (==speed dr/dt)</span>
+<span class="comment">% elseif codage=='int' % codage intensity (cluster...)</span>
+<span class="comment">% elseif codage=='time' % codage time</span>
+<span class="comment">% cf. cartobyf</span>
+
+<span class="comment">% V1.0 AS 3/5/2006</span>
+<span class="comment">% V1.1 oct 2006 ajout du codage conf</span>
+<span class="comment">% V1.2 dec 2006 ajout codage var</span>
+<span class="comment">% V2.0 2013!</span>
+
+<span class="keyword">if</span> nargin&lt;4, min_length_ratio = 0; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin&lt;3, params_def = MTTparams_def; dirname = params_def{4}; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin&lt;2, codage = <span class="string">'speed'</span>; <span class="keyword">end</span>
+<span class="keyword">if</span> nargin&lt;1, files = dir(<span class="string">'*.tif'</span>); filename = files(1).name; <span class="keyword">end</span>
+<span class="keyword">if</span> isempty(filename), disp(<span class="string">'No data... Check dir &amp; filename !'</span>), <span class="keyword">return</span>, <span class="keyword">end</span>
+
+surf = (150^2)/(160^2); <span class="comment">% surf &eacute;lem, (150 nm)^2, cf. Douglass, Cell 2005, avec 1pxl = 160nm</span>
+n_max = 24; <span class="comment">% densit&eacute; "max", en pk/pxl/img</span>
+
+Ncol = 36;
+cmap = colormap(hot(Ncol));
+Imax = 2000*Ncol;
+par_def = MTTparams_def; Dmax = str2double(par_def{8}); sig_free = 2*sqrt(Dmax); Boule_free = str2double(par_def{14});
+max_dr = sig_free*Boule_free; <span class="comment">% = 1,98 pxl for sJB %%% r2 = calcul_r2(tab_param); sqrt(max(r2(:)));</span>
+</pre><pre class="codeoutput">Index exceeds matrix dimensions.
+
+Error in traj_xy2 (line 21)
+if nargin&lt;1, files = dir('*.tif'); filename = files(1).name; end
+</pre><h2>boucle / file<a name="3"></a></h2><pre class="codeinput">filename_full = [dirname filesep filename <span class="string">'_tab_param.mat'</span>] ;
+tab_param = importdata(filename_full);
+
+<span class="keyword">if</span> strcmp(codage, <span class="string">'int'</span>), [trcdata, pkdata] = detect_reconnex_to_trc(tab_param);
+<span class="keyword">else</span> trcdata = detect_reconnex_to_trc(tab_param);
+<span class="keyword">end</span>
+<span class="keyword">if</span> isempty(trcdata), <span class="keyword">return</span>, <span class="keyword">end</span>
+
+figure(<span class="string">'WindowStyle'</span>,<span class="string">'docked'</span>)
+
+DIC_name = dicname(filename);
+<span class="keyword">if</span> ~isempty(dir(DIC_name))
+    DIC = imread(DIC_name);
+    sat = .002 ; <span class="comment">% saturation 0.2% min-max du contraste</span>
+    DIC_sat = imadjust(DIC, stretchlim(DIC, [sat 1-sat]), [0 1]);
+    H = fspecial(<span class="string">'average'</span>);
+    pict = imfilter(DIC_sat,H,<span class="string">'replicate'</span>);
+<span class="keyword">else</span>
+    pict = imread(filename,1);
+    pict = max(pict(:)) - pict; <span class="comment">% invert</span>
+<span class="keyword">end</span>
+</pre><h2>prep data<a name="4"></a></h2><pre class="codeinput">Tmax = max(trcdata(:,2));
+ntrc = trcdata(end,1);
+min_trc_length = round(Tmax*min_length_ratio);
+</pre><h2>* codage couleur: max val *<a name="5"></a></h2><pre class="codeinput"><span class="keyword">if</span> strcmp(codage, <span class="string">'dens'</span>) <span class="comment">% codage par densit&eacute;</span>
+    val_max = n_max;
+<span class="keyword">elseif</span> strcmp(codage, <span class="string">'speed'</span>) <span class="comment">% codage par d&eacute;plcmt (vitesse)</span>
+    val_max = max_dr; <span class="comment">% LOG ???</span>
+<span class="keyword">elseif</span> strcmp(codage, <span class="string">'int'</span>) <span class="comment">% codage par intensit&eacute; (cluster...)</span>
+    val_max = Imax;
+<span class="keyword">elseif</span> strcmp(codage, <span class="string">'time'</span>)
+    val_max = Tmax;
+<span class="keyword">else</span> val_max = inf;
+<span class="keyword">end</span>
+<span class="comment">% % % % % a=linspace(0,val_max,Ncol);imagesc(a), axis equal off,colormap(hot),colorbar,colorbar('title','speed (pxl/frm)')</span>
+</pre><h2>* met l'image de la cellule "au plancher" *<a name="6"></a></h2><pre class="codeinput">pict = double(pict);
+imagesc(pict)
+colormap(<span class="string">'gray'</span>)
+axis <span class="string">ij</span> <span class="string">image</span>
+title({cd; filename ; [<span class="string">' codage: '</span> codage]}, <span class="string">'interpreter'</span>, <span class="string">'none'</span>)
+hold <span class="string">on</span>
+pause(.1)
+</pre><h2>--- go through traces ---<a name="7"></a></h2><pre class="codeinput">disp(<span class="string">'traj :            '</span>)
+
+<span class="keyword">for</span> itrc = 1:ntrc
+
+    <span class="keyword">if</span> mod(itrc,10)==0
+        fprintf([repmat(<span class="string">'\b'</span>,1,11) <span class="string">'%5i/%5i'</span>],itrc,ntrc)
+        drawnow <span class="string">expose</span>
+    <span class="keyword">end</span>
+
+    Ni = find(trcdata(:,1)==itrc); <span class="comment">% # des points de la traj i</span>
+
+    <span class="keyword">if</span> length(Ni)&gt;min_trc_length
+</pre><pre class="codeinput">        trci = trcdata(trcdata(:,1)==itrc,:);
+        n_trci = trci(:,2)'; <span class="comment">%  # d'image, la 2e colonne, de la trace i</span>
+        dtrci = diff(n_trci); <span class="comment">% pour d&eacute;tecter les blinks</span>
+</pre><h2>* intensit&eacute;s traji *<a name="9"></a></h2><pre class="codeinput">        <span class="keyword">if</span> strcmp(codage, <span class="string">'int'</span>)
+            pki = pkdata(trcdata(:,1)==itrc,:);
+            inti = pki(:,5); <span class="comment">% intensit&eacute; des points de la traj i</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">for</span> istep = 1:length(n_trci)-1
+</pre><h2>coordonn&eacute;es t,x,y du pas en cours<a name="11"></a></h2><pre class="codeinput">            ti = trcdata(Ni(istep),2);
+            xi = trcdata(Ni(istep),3);
+            xii = trcdata(Ni(istep+1),3);
+            yi = trcdata(Ni(istep),4);
+            yii = trcdata(Ni(istep+1),4);
+</pre><h2>* codage couleur *<a name="12"></a></h2><pre class="codeinput">            <span class="keyword">if</span> strcmp(codage, <span class="string">'dens'</span>) <span class="comment">% codage par densit&eacute;</span>
+                disti = sqrt((trcdata(Ni,3)-xi).^2 + (trcdata(Ni,4)-yi).^2);
+                val = sum(disti&lt;=sqrt(surf)); <span class="comment">% densit&eacute; = nb de points ds voisinage</span>
+
+            <span class="keyword">elseif</span> strcmp(codage, <span class="string">'speed'</span>) <span class="comment">% codage par d&eacute;plcmt (vitesse)</span>
+                val = sqrt((xii-xi)^2+(yii-yi)^2); <span class="comment">% LOG ???</span>
+
+            <span class="keyword">elseif</span> strcmp(codage, <span class="string">'int'</span>) <span class="comment">% codage par intensit&eacute; (cluster...)</span>
+                val = inti(istep);
+
+            <span class="keyword">elseif</span> strcmp(codage, <span class="string">'time'</span>)
+                val = ti;
+
+            <span class="keyword">else</span> val = 0; <span class="comment">% AS 2014</span>
+            <span class="keyword">end</span>
+
+            <span class="keyword">if</span> val&gt;val_max, val = val_max; <span class="keyword">end</span> <span class="comment">% 'ecretage', for dpl during blink, intensity 'out of range'..</span>
+            val2 = round(val*(Ncol-1)/val_max)+1; <span class="comment">% val 0 to 1, val2 1 to Ncol (2 to Ncol-1, avoid limits of cmap??)</span>
+</pre><h2>plot du segment istep <a name="13"></a></h2><pre class="codeinput">            <span class="keyword">if</span> dtrci(istep)==1 <span class="comment">% pas blink</span>
+                line([xi xii], [yi yii], <span class="string">'color'</span>, cmap(val2,:)) <span class="comment">% hsv2rgb([val,1,1]))</span>
+            <span class="keyword">else</span> <span class="comment">% blink =&gt; LineStyle :</span>
+                line([xi xii], [yi yii], <span class="string">'color'</span>, cmap(val2,:), <span class="string">'LineStyle'</span>, <span class="string">':'</span>)
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span> <span class="comment">% for istep = 1:length(Ni)-1</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span> <span class="comment">% if length(Ni)&gt;0</span>
+<span class="keyword">end</span> <span class="comment">% for itrc = 1:NoTrace</span>
+
+axis <span class="string">image</span> <span class="comment">% colormap(hot), colorbar cf nanopict</span>
+fprintf([repmat(<span class="string">'\b'</span>,1,11) <span class="string">'%5i/%5i\r'</span>],ntrc,ntrc)
+</pre><pre class="codeinput"><span class="comment">% % % for n=1:100</span>
+<span class="comment">% % %     in = i(:,n); jn = j(:,n); tn = t(:,n);</span>
+<span class="comment">% % %     patch('XData', [nan;in(tn&gt;0);nan], 'YData', [nan;jn(tn&gt;0);nan], 'CData', [nan;tn(tn&gt;0);nan], 'FaceColor', 'interp', 'EdgeColor', 'interp');</span>
+<span class="comment">% % % end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2012b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function traj_xy2(filename, codage, dirname, min_length_ratio)
+
+% function traj_xy2(filename, codage, dirname, min_length_ratio)
+%
+% plot all traces on first or trans. image
+%
+% if codage=='dens' % codage density, n/R2, cf. Douglass
+% elseif codage=='speed' % codage movement (==speed dr/dt)
+% elseif codage=='int' % codage intensity (cluster...)
+% elseif codage=='time' % codage time
+% cf. cartobyf
+
+% V1.0 AS 3/5/2006
+% V1.1 oct 2006 ajout du codage conf
+% V1.2 dec 2006 ajout codage var
+% V2.0 2013!
+
+if nargin<4, min_length_ratio = 0; end
+if nargin<3, params_def = MTTparams_def; dirname = params_def{4}; end
+if nargin<2, codage = 'speed'; end
+if nargin<1, files = dir('*.tif'); filename = files(1).name; end
+if isempty(filename), disp('No data... Check dir & filename !'), return, end
+
+surf = (150^2)/(160^2); % surf élem, (150 nm)^2, cf. Douglass, Cell 2005, avec 1pxl = 160nm
+n_max = 24; % densité "max", en pk/pxl/img
+
+Ncol = 36;
+cmap = colormap(hot(Ncol));
+Imax = 2000*Ncol;
+par_def = MTTparams_def; Dmax = str2double(par_def{8}); sig_free = 2*sqrt(Dmax); Boule_free = str2double(par_def{14});
+max_dr = sig_free*Boule_free; % = 1,98 pxl for sJB %%% r2 = calcul_r2(tab_param); sqrt(max(r2(:)));
+
+%% boucle / file
+filename_full = [dirname filesep filename '_tab_param.mat'] ;
+tab_param = importdata(filename_full);
+
+if strcmp(codage, 'int'), [trcdata, pkdata] = detect_reconnex_to_trc(tab_param);
+else trcdata = detect_reconnex_to_trc(tab_param);
+end
+if isempty(trcdata), return, end
+
+figure('WindowStyle','docked')
+
+DIC_name = dicname(filename);
+if ~isempty(dir(DIC_name))
+    DIC = imread(DIC_name);
+    sat = .002 ; % saturation 0.2% min-max du contraste
+    DIC_sat = imadjust(DIC, stretchlim(DIC, [sat 1-sat]), [0 1]);
+    H = fspecial('average');
+    pict = imfilter(DIC_sat,H,'replicate');
+else
+    pict = imread(filename,1);
+    pict = max(pict(:)) - pict; % invert
+end
+
+%% prep data
+Tmax = max(trcdata(:,2));
+ntrc = trcdata(end,1);
+min_trc_length = round(Tmax*min_length_ratio);
+
+%% *** codage couleur: max val ***
+if strcmp(codage, 'dens') % codage par densité
+    val_max = n_max;
+elseif strcmp(codage, 'speed') % codage par déplcmt (vitesse)
+    val_max = max_dr; % LOG ???
+elseif strcmp(codage, 'int') % codage par intensité (cluster...)
+    val_max = Imax;
+elseif strcmp(codage, 'time')
+    val_max = Tmax;
+else val_max = inf;
+end
+% % % % % a=linspace(0,val_max,Ncol);imagesc(a), axis equal off,colormap(hot),colorbar,colorbar('title','speed (pxl/frm)')
+
+
+%% *** met l'image de la cellule "au plancher" ***
+pict = double(pict);
+imagesc(pict)
+colormap('gray')
+axis ij image
+title({cd; filename ; [' codage: ' codage]}, 'interpreter', 'none')
+hold on
+pause(.1)
+
+%% REPLACE_WITH_DASH_DASH- go through traces REPLACE_WITH_DASH_DASH-
+disp('traj :            ')
+
+for itrc = 1:ntrc
+    
+    if mod(itrc,10)==0
+        fprintf([repmat('\b',1,11) '%5i/%5i'],itrc,ntrc)
+        drawnow expose
+    end
+    
+    Ni = find(trcdata(:,1)==itrc); % # des points de la traj i
+    
+    if length(Ni)>min_trc_length
+        trci = trcdata(trcdata(:,1)==itrc,:);
+        n_trci = trci(:,2)'; %  # d'image, la 2e colonne, de la trace i
+        dtrci = diff(n_trci); % pour détecter les blinks
+        
+%%  *** intensités traji ***
+        if strcmp(codage, 'int')
+            pki = pkdata(trcdata(:,1)==itrc,:);
+            inti = pki(:,5); % intensité des points de la traj i
+        end
+        
+        for istep = 1:length(n_trci)-1
+            
+%%          coordonnées t,x,y du pas en cours
+            ti = trcdata(Ni(istep),2);
+            xi = trcdata(Ni(istep),3);
+            xii = trcdata(Ni(istep+1),3);
+            yi = trcdata(Ni(istep),4);
+            yii = trcdata(Ni(istep+1),4);
+            
+%%          *** codage couleur ***
+            if strcmp(codage, 'dens') % codage par densité
+                disti = sqrt((trcdata(Ni,3)-xi).^2 + (trcdata(Ni,4)-yi).^2);
+                val = sum(disti<=sqrt(surf)); % densité = nb de points ds voisinage
+                
+            elseif strcmp(codage, 'speed') % codage par déplcmt (vitesse)
+                val = sqrt((xii-xi)^2+(yii-yi)^2); % LOG ???
+                
+            elseif strcmp(codage, 'int') % codage par intensité (cluster...)
+                val = inti(istep);
+                
+            elseif strcmp(codage, 'time')
+                val = ti;
+                
+            else val = 0; % AS 2014
+            end
+            
+            if val>val_max, val = val_max; end % 'ecretage', for dpl during blink, intensity 'out of range'..
+            val2 = round(val*(Ncol-1)/val_max)+1; % val 0 to 1, val2 1 to Ncol (2 to Ncol-1, avoid limits of cmap??)
+            
+%%          ** plot du segment istep **
+            if dtrci(istep)==1 % pas blink
+                line([xi xii], [yi yii], 'color', cmap(val2,:)) % hsv2rgb([val,1,1]))
+            else % blink => LineStyle :
+                line([xi xii], [yi yii], 'color', cmap(val2,:), 'LineStyle', ':')
+            end
+        end % for istep = 1:length(Ni)-1
+    end % if length(Ni)>0
+end % for itrc = 1:NoTrace
+
+axis image % colormap(hot), colorbar cf nanopict
+fprintf([repmat('\b',1,11) '%5i/%5i\r'],ntrc,ntrc)
+
+%%%
+
+% % % for n=1:100
+% % %     in = i(:,n); jn = j(:,n); tn = t(:,n);
+% % %     patch('XData', [nan;in(tn>0);nan], 'YData', [nan;jn(tn>0);nan], 'CData', [nan;tn(tn>0);nan], 'FaceColor', 'interp', 'EdgeColor', 'interp');
+% % % end
+
+##### SOURCE END #####
+--></body></html>
