@@ -20,15 +20,23 @@ if ~isempty(DIC_name)
     DIC_sat = imadjust(DIC, stretchlim(DIC, [sat 1-sat]), [0 1]);
     H = fspecial('average');
     pict = imfilter(DIC_sat, H, 'replicate');
-else
+elseif isfile(['max' filesep filename(1:end-4) '_max.tif'])
+        max_im = imread(['max' filesep filename(1:end-4) '_max.tif']);
+        pict = rgb2gray(max_im);
+        if verbose
+            disp('using max. proj. image, converted to gray')
+        end
+    else 
     pict = double(imread(filename, 1)); % 1e image du stack...
     pict = max(pict(:)) - pict; % invert
 end
 
-if (length(DIC_name) > 4) && ~strcmp(DIC_name(1:5),'trans') % DIC image double, take half. trans image already single
-    DIC_width = size(pict, 2);
-    if contains(viewDV, 'left'), pict = pict(:, 1:DIC_width/2); % 1/2 image de gauche !
-    elseif contains(viewDV, 'right'), pict = pict(:, DIC_width/2+1:end); end % strcmp(viewDV, '_right')...
+[DIC_height, DIC_width ] = size(pict);
+if DIC_width > 1.5*DIC_height %%%((length(DIC_name) > 4) && ~strcmp(DIC_name(1:5),'trans')) || (isfolder('trans') && isempty(DIC_name)) % DIC image double, take half. trans image already single, exept if no trans, using 1st img
+%     DIC_width = size(pict, 2);
+    if contains(viewDV, 'left'), pict = pict(:, 1:DIC_width/2); % 1/2 image de gauche 
+    elseif contains(viewDV, 'right'), pict = pict(:, DIC_width/2+1:end);
+    end 
 end
 
 if ~triD % 2D donc...

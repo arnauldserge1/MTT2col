@@ -1,6 +1,6 @@
 function [N_coloc, coloc_duration] = traj_xy_coloc(file, dirname, string_reg, codage)
 
-% function [N_coloc, coloc_duration] = traj_xy_coloc(file, dirname, string_reg, codage)
+% function [N_coloc, coloc_duration] = traj_xy_coloc(file, dirname, string_reg)
 %
 % plot all traces on first or transm. image
 % color: magenta, green or white (coloc)
@@ -12,7 +12,7 @@ global PARAM_I PARAM_J PARAM_ALPHA N_PARAM
 global coloc_dist_max coloc_time_min
 
 if isempty(coloc_dist_max), coloc_dist_max = 2; end % pxl
-if isempty(coloc_time_min), coloc_time_min = 2; end % frm
+if isempty(coloc_time_min), coloc_time_min = 2, end % frm
 if isempty(N_PARAM), MTTparams_def; end
 
 [pxl_size, time_lag] = get_calib3;
@@ -31,6 +31,7 @@ if isempty(file), disp('No data... Check dir & filename !'), return, end
 filename_full = [dirname filesep file '_tab_param.mat'];
 if isempty(dir(filename_full)), disp('no data??'), N_coloc = []; coloc_duration = []; return, end
 tab_param = importdata(filename_full);
+Tmax = size(tab_i, 1);
 
 %% split Red/Green
 img1 = imread(file, 1);
@@ -48,7 +49,6 @@ tab_jR = tab_paramR(PARAM_J-1:N_PARAM:end,:);
 tab_alphaR = tab_paramR(PARAM_ALPHA-1:N_PARAM:end,:);
 r2 = calcul_r2(tab_paramR); % r2: (Nfrm-1) * Ntraj_Red
 logDR = log10(r2*pxl_size^2/time_lag); % hist(logDG(:), 100) D by step
-Tmax = size(tab_iG, 1);
 
 %% apply reg with mean_tform to i,j Red => i,j Red reg (Rr) 11/5/2017
 if ~isempty(dir(['dic' filesep 'reg' filesep 'mean_tform.mat']))
@@ -61,7 +61,6 @@ else
 end
 
 % if isdir('max'), show_max_image(file)
-clf
 DIC_image(file, dicname(file), 0, 0, 0, '_right', 1, 0); % figure... imagesc(pict), axis image ij off, colormap('gray'), hold on
 
 %% compute or load dist
@@ -79,12 +78,12 @@ end
 NtrcG = size(tab_iG, 2);
 disp('green traj:            ')
 for ntrc = 1:NtrcG
-    ok = find(tab_alphaG(:, ntrc) > 0); % frames with signal, to plot
-    for nf = 1:length(ok)-1 % nf for frame, nt for time in carto_movie_2colors!!!!!!
-        t = ok(nf); % time of current point ok
-        tt = [ok(nf) ok(nf+1)]; % time of current point ok and next one
+    ok = find(tab_alphaG(:, ntrc) > 0);
+    for nf = 1:length(ok)-1
+        t = ok(nf);
+        tt = [ok(nf) ok(nf+1)];
         if strcmp(codage, 'diff')
-            logD = logDG(t, ntrc);
+            logD = logDG(t, ok(nt));
             logD = sort([-4, logD, 0]);
             logD = logD(2);
             if (logD > -2), clr = [1 0.5 1] - [0 1 0]*(logD/4);
@@ -113,7 +112,7 @@ for ntrc = 1:NtrcR
         t = ok(nf);
         tt = [ok(nf) ok(nf+1)];
         if strcmp(codage, 'diff')
-            logD = logDR(t, ntrc);
+            logD = logDR(t, ok(nt));
             logD = sort([-4, logD, 0]);
             logD = logD(2);
             if (logD > -2), clr = [1 0.5 1] - [0 1 0]*(logD/4);

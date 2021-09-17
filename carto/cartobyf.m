@@ -105,7 +105,7 @@ for nf = 1:Nfiles
     if strcmp(codage, 'Dv') || strcmp(codage, 'SCI')
         ok = traj_xyc(file, codage, dirname, D, v);
     elseif contains(codage, 'coloc') % meaning 2 colors SPT: red, green & coloc, color coded for time
-        [N_coloc, coloc_duration] = traj_xy_coloc(file, dirname, string_reg);
+        [N_coloc, coloc_duration] = traj_xy_coloc(file, dirname, string_reg); % codage = diff py def
     elseif strcmp(codage, 'Dv_2colors') % meaning 2 colors SPT: red, green & coloc, with color code for Dv values
         [N_coloc, coloc_duration] = traj_xy_Dv_2colors(file, D, v);%, dirname, string_reg);
     elseif strcmp(codage, 'anomal_2colors') % meaning 2 colors SPT: red, green & coloc, with color code for D & gamma values (anomal diff)

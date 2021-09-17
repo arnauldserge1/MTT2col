@@ -76,7 +76,7 @@ for t = 1:Tmax-1
     tt = [t t+1];
     
     %% Green
-    ok = find(tab_alphaG(t, :) > 0);
+    ok = find(tab_alphaG(t, :) > 0); % frames with signal, to plot
     for nt = 1:length(ok) % Ntrc ok
         plot(tab_jG(tt, ok(nt)), tab_iG(tt, ok(nt)), 'b', 'linewidth', 2) %  blue shadow
     end
